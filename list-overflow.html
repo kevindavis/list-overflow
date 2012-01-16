@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>List overflow prototype</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="presets.js"></script>
+	<link rel="stylesheet" type="text/css" href="stylish.css" />
+</head>
+<body>
+	
+<div id="demo-navigation">
+	<a id="design-link" href="#">DESIGN TIME</a> | <a id="runtime-link" href="#">RUNTIME</a>
+</div>
+
+<div id="runtime">
+	<div id="container">
+		<ul id="links"><!-- visible links will fill in here --></ul>
+		<div id="overflow">
+			<a id="overflow-entry" href="#">&#183;&#183;&#183;</a>
+			<ul id="overflow-links"><!-- overflow links will fill in here --></ul>
+		</div>
+	</div>
+</div>
+
+<div id="design">
+	<p>Load a preset link..</p>
+	<select id="design-presets"><!-- presets will fill in here --></select>
+	<br/><br/>
+	<p>You can add more lists in the file presets.js</p>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+	
+	// demo navigation.. yes this is ugly, but it's 3am
+	$("#runtime-link").click(function(){
+		switchToRuntime();
+	});
+	$("#design-link").click(function(){
+		$("#runtime").hide();
+		$("#design-link").css("fontWeight", "bold");
+		$("#runtime-link").css("fontWeight", "normal");
+		$("#design").show();
+	});
+	
+	function switchToRuntime(){
+		hydrate();
+		recalc();
+
+		$("#runtime-link").css("fontWeight", "bold");
+		$("#design-link").css("fontWeight", "normal");
+		$("#design").hide();
+		$("#runtime").show();
+	}
+
+	// design time
+	var link_widths = presets.few;
+	
+	$("#design-presets").change(function(){
+		link_widths = presets[$(this).val()];
+		switchToRuntime();
+	});
+	
+	$.each(presets, function(name, val){
+		$("#design-presets").append($("<option value='" + name + "'>" + name + "</option>"));
+	});
+	
+	// runtime
+	var SPACING = 40;
+	var TOTAL_WIDTH = 700;
+	var ENTRY_WIDTH = 25;
+	var DROPDOWN_PADDING = 10;
+	
+	$("#overflow-entry").click(function(){
+		$("#overflow-links").toggle();
+	});
+	
+	// turn the JS objects into divs in the link selector
+	function hydrate(){
+		// reset the runtime
+		$("#links li").remove();
+		$("#overflow-links").empty();
+		$("#overflow-links").css("marginLeft", 0);
+		$("#overflow-entry").hide();
+		
+		$.each(link_widths, function(i, width){
+			var el = $("<li><a href='#'></a></li>");
+			el.width(width);
+			$("#links").append(el);
+		});
+	}
+	
+	// the goods
+	function recalc() {
+		if (determineWidth() <= TOTAL_WIDTH) {
+			$("#links>li").last().css("marginRight", "0px"); 
+			return; 
+		} else {
+			$("#overflow-entry").show();
+			moveToOverflow();
+			recalc();
+		}
+	};
+	
+	// shift the last link to the top of the overflow list
+	function moveToOverflow() {
+		var last = $("#links>li").last();
+		$("#overflow-links").prepend(last.clone());
+		if(last.width() > Math.abs(parseInt($("#overflow-links").css("marginLeft")))){
+			$("#overflow-links").css("marginLeft", "-"+last.width()+"px");
+		}
+		last.remove();
+	}
+	
+	// determines the width of the visible links
+	function determineWidth() {
+		var width = 0;
+		$("#links>li").each(function(){
+			width += $(this).width();
+			width += SPACING;
+		});
+		
+		if($("#overflow-entry").is(":visible"))
+		{
+			return width + ENTRY_WIDTH - SPACING;
+		} else {
+			return width - SPACING;
+		}
+	}
+</script>
+
+</body>
+</html>
