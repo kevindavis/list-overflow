@@ -6,5 +6,5 @@ presets.onehuge = [675, 200, 140];
 // pile on your own test cases here! these are arrays of link sizes (in px)
 
 // KNOWN ISSUES: 
-// links beyond the size of the link selector
+// individual links beyond the size of the list
 // at extreme numbers of links it could be slow.. 
